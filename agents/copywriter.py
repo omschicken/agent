@@ -41,9 +41,10 @@ def _claude_copy(filename, note, brand, platforms, model):
 в описании источник клипа (если он указан в описании клипа), упоминание сайта {brand['site_name']}
 и промокода {brand['promo_code']}, а также строка «{brand['disclaimer']}». Только JSON."""
     r = client.messages.create(
-        model=model, max_tokens=1200, messages=[{"role": "user", "content": prompt}]
+        model=model, max_tokens=4000, messages=[{"role": "user", "content": prompt}]
     )
-    text = r.content[0].text.strip().strip("`").removeprefix("json").strip()
+    text = "".join(b.text for b in r.content if b.type == "text")
+    text = text.strip().strip("`").removeprefix("json").strip()
     return json.loads(text)
 
 

@@ -3,6 +3,7 @@ import glob
 import json
 import os
 import sys
+import time
 
 import yaml
 
@@ -14,6 +15,7 @@ DRY_RUN = os.environ.get("DRY_RUN", "1") == "1"  # по умолчанию ни�
 if "--scout" in sys.argv:  # сначала сам находит и скачивает разрешённые видео
     from agents import scout
     scout.scout(cfg)
+    time.sleep(5)  # даём антивирусу/проводнику отпустить свежескачанные файлы
 
 for src in glob.glob("inbox/*.mp4"):
     name = os.path.splitext(os.path.basename(src))[0]

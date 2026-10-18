@@ -40,7 +40,9 @@ def _claude_copy(filename, note, brand, platforms, model):
 Верни JSON вида {{"<платформа>": {{"title": "...", "description": "...", "hashtags": ["..."]}}}}
 для платформ: {platforms}. Правила: заголовок до 70 символов, цепляющий, без ложного кликбейта;
 в описании источник клипа (если он указан в описании клипа), упоминание сайта {brand['site_name']}
-и промокода {brand['promo_code']}, а также строка «{brand['disclaimer']}». Только JSON."""
+и промокода {brand['promo_code']}, а также строка «{brand['disclaimer']}». Про сайт и промокод пиши только
+факты (название и сам код): НЕ обещай бонусы, скидки, выигрыши, заработок, «гарантированный дроп» и не
+выдумывай условия, которых тебе не дали. Только JSON."""
     r = client.messages.create(
         model=model, max_tokens=4000, messages=[{"role": "user", "content": prompt}]
     )

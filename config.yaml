@@ -21,7 +21,8 @@ scout:
     - {q: "cs2 pro 1v4 ace tournament", lang: en}
   per_query: 10
   keywords: [cs2, csgo, cs:go, counter-strike, counter strike, кс2, кс го, ксго, кс 2, контр-страйк]
-  exclude: [fragmovie, frag movie, montage, compilation, top 10, top 5, top 20, best of, best moments, highlights, moments of, weekly, ultra rare, "#shorts", монтаж, подборка, нарезка, лучшие моменты, топ ]
+  whitelist_only: false     # true = брать ТОЛЬКО каналы из sources.yaml (channels), без общего поиска
+  exclude: [розыгрыш, giveaway, конкурс, раздача, настройки, конфиг, config, crosshair, прицел,fragmovie, frag movie, montage, compilation, top 10, top 5, top 20, best of, best moments, highlights, moments of, weekly, ultra rare, "#shorts", монтаж, подборка, нарезка, лучшие моменты, топ ]
   period: month             # week | month | any
   min_views: 5000
   max_new_videos: 3         # сколько новых видео брать за запуск
@@ -29,6 +30,14 @@ scout:
   max_duration: 600
   max_height: 1080
   vet: true                 # Claude по названию/описанию проверяет: один момент, не сборка, нужный язык
+judge:                      # Claude смотрит кадры (нужен ANTHROPIC_API_KEY)
+  enabled: true
+  source_frames: 8          # кадров для проверки всего видео
+  clip_frames: 4            # кадров для проверки каждого клипа
+  max_face_ratio: 0.15      # максимум доли кадров с лицами/вебкой
+  min_score: 6              # минимальная «цепляющесть» клипа 0-10
+  case_min_score: 8         # для открытия кейсов без редкого дропа
+  require_cs2: true
 platforms: [youtube, tiktok, instagram]
 model: claude-sonnet-5-5
 copy_provider: auto         # auto = Claude если есть ANTHROPIC_API_KEY, иначе шаблоны; claude | template

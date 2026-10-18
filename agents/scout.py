@@ -103,7 +103,8 @@ def scout(cfg, dest="inbox", sources_file="sources.yaml"):
     seen = _seen()
     src, blocked = _from_sources(sources_file, sc.get("per_query", 8))
     cands = [(v, u, "any") for v, u in src]
-    for q in sc.get("queries", []):
+    queries = [] if (sc.get("whitelist_only") and src) else sc.get("queries", [])  # только белый список каналов
+    for q in queries:
         q = {"q": q, "lang": "any"} if isinstance(q, str) else q
         cands += [(v, u, q.get("lang", "any")) for v, u in
                   _search(q["q"], sc.get("per_query", 8), sc.get("period", "week"))]

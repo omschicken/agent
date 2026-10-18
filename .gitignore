@@ -6,3 +6,6 @@ inbox/*
 out/*
 !inbox/.gitkeep
 !out/.gitkeep
+rejected/
+cache/
+seen.json

@@ -7,13 +7,13 @@
    Видео без склеек (Twitch-клип, один момент) - одна сцена.
 """
 import re
-import subprocess
+from agents.proc import run
 
 EDGE = 0.25  # отступ от склейки, чтобы не ловить кадры перехода
 
 
 def _duration(path):
-    out = subprocess.run(
+    out = run(
         ["ffprobe", "-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", path],
         capture_output=True, text=True,
     ).stdout
@@ -22,7 +22,7 @@ def _duration(path):
 
 def _cuts(path, threshold):
     """Склейки + границы чёрных кадров/титульных карточек (плавные переходы между моментами)."""
-    p = subprocess.run(
+    p = run(
         ["ffmpeg", "-i", path, "-an", "-vf",
          f"blackdetect=d=0.1:pic_th=0.9:pix_th=0.2,select='gt(scene,{threshold})',showinfo",
          "-f", "null", "-"],
@@ -35,7 +35,7 @@ def _cuts(path, threshold):
 
 
 def _loudness(path):
-    p = subprocess.run(
+    p = run(
         ["ffmpeg", "-i", path, "-vn", "-af", "ebur128=peak=none", "-f", "null", "-"],
         capture_output=True, text=True,
     )

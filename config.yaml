@@ -1,4 +1,4 @@
-brand:
+﻿brand:
   site_name: "YOURCASES.GG"
   promo_code: "SHORTS"
   banner_text: "Открывай кейсы на {site_name} | промо {promo_code}"
@@ -7,6 +7,10 @@ clip:
   min_sec: 6
   max_sec: 40
   per_source: 3             # сколько клипов резать из одного видео
+  mode: transcript          # transcript = записи стримов: Whisper + Claude ищут рейджи/смешное/хайлайты; scenes = по сценам/громкости
+  whisper_model: large-v3-turbo   # на GPU (RTX 3070): large-v3-turbo - точно и быстро; small/base - для процессора
+  moment_min_sec: 15
+  moment_max_sec: 45
 scout:
   # lang: ru - только русскоязычные ролики (смешное/полезное); en - турнирные хайлайты, можно на англ.
   queries:
@@ -21,7 +25,7 @@ scout:
     - {q: "cs2 pro 1v4 ace tournament", lang: en}
   per_query: 10
   keywords: [cs2, csgo, cs:go, counter-strike, counter strike, кс2, кс го, ксго, кс 2, контр-страйк]
-  whitelist_only: false     # true = брать ТОЛЬКО каналы из sources.yaml (channels), без общего поиска
+  whitelist_only: true    # true = брать ТОЛЬКО каналы из sources.yaml (channels), без общего поиска
   exclude: [розыгрыш, giveaway, конкурс, раздача, настройки, конфиг, config, crosshair, прицел,fragmovie, frag movie, montage, compilation, top 10, top 5, top 20, best of, best moments, highlights, moments of, weekly, ultra rare, "#shorts", монтаж, подборка, нарезка, лучшие моменты, топ ]
   period: month             # week | month | any
   min_views: 5000
@@ -34,7 +38,9 @@ judge:                      # Claude смотрит кадры (нужен ANTHR
   enabled: true
   source_frames: 8          # кадров для проверки всего видео
   clip_frames: 4            # кадров для проверки каждого клипа
-  max_face_ratio: 0.15      # максимум доли кадров с лицами/вебкой
+  curated: true             # источник - белый список авторов: не оцениваем «цепляющесть»/лица по кадрам, только CS2/чужая реклама/розыгрыши
+  allow_webcam: true       # вебка стримера-оверлея допустима (авторы из белого списка); лицо во весь экран - нет
+  max_face_ratio: 0.15      # (если allow_webcam: false) максимум доли кадров с лицами; вебку тогда срезаем
   min_score: 6              # минимальная «цепляющесть» клипа 0-10
   case_min_score: 8         # для открытия кейсов без редкого дропа
   require_cs2: true

@@ -6,6 +6,7 @@
   - sources.yaml: blocklist - каналы, которые не трогаем (например, попросили убрать)
 Рядом с видео пишется <id>.txt с названием и источником (идёт в тексты постов).
 """
+import itertools
 import json
 import os
 import re
@@ -42,17 +43,17 @@ def _from_sources(path, limit):
     if not os.path.exists(path):
         return [], set()
     cfg = yaml.safe_load(open(path, encoding="utf-8")) or {}
-    out = []
-    for url in cfg.get("channels", []) + cfg.get("urls", []):
+    per_channel = []
+    for url in (cfg.get("channels") or []) + (cfg.get("urls") or []):
         try:
             res = _info(url, extract_flat=True, playlistend=limit)
         except Exception as e:
             print(f"[scout] {url}: пропуск ({e})")
             continue
-        for e in res.get("entries") or [res]:
-            if e.get("id"):
-                out.append((e["id"], e.get("url") or e.get("webpage_url") or url))
-    return out, {b.lower() for b in cfg.get("blocklist", [])}
+        per_channel.append([(e["id"], e.get("url") or e.get("webpage_url") or url)
+                            for e in (res.get("entries") or [res]) if e.get("id")])
+    out = [x for row in itertools.zip_longest(*per_channel) for x in row if x]  # по кругу: по видео с каждого канала
+    return out, {b.lower() for b in (cfg.get("blocklist") or [])}
 
 
 def _is_russian(m):
@@ -67,14 +68,20 @@ def _vet(m, lang, model):
     """Claude по названию/описанию решает: один цельный момент (клатч, фейл, лайфхак, кейс), а не сборка."""
     import anthropic
 
-    want = "на русском языке" if lang == "ru" else "любой язык, турнирный/про-хайлайт"
+    if lang == "trusted":  # автор из белого списка: берём рейджи, смешное и хайлайты, нарезки допустимы
+        need = ("Нужны: рейджи (эмоциональные срывы), смешные моменты и фейлы, сильные хайлайты (клатч/эйс). "
+                "Нарезки из нескольких моментов допустимы - мы режем их по сценам. НЕ подходят: разговорные стримы, "
+                "настройки/гайды без игры, новости, розыгрыши, видео про другие игры.")
+    else:
+        want = "на русском языке" if lang == "ru" else "любой язык, турнирный/про-хайлайт"
+        need = ("Нужны: смешной или полезный контент (лайфхак, раскидка, фишка), открытие кейсов или одиночный "
+                "сильный момент. НЕ подходят: сборки из многих моментов разных игроков, фрагмуви, топы, новости, "
+                f"длинные стримы, другие игры. Язык: {want}.")
     prompt = f"""Видео про CS2. Название: {m.get('title')}
 Канал: {m.get('uploader')}; длительность: {m.get('duration')} c
 Описание: {(m.get('description') or '')[:600]}
 Теги: {', '.join((m.get('tags') or [])[:15])}
-Нужен контент для коротких вертикальных видео: смешной или полезный (лайфхак, раскидка, фишка), открытие кейсов
-или одиночный сильный момент (клатч/эйс одного игрока). НЕ подходят: сборки/нарезки из многих моментов
-разных игроков, фрагмуви, топы, новости, длинные стримы, видео про другие игры. Язык: {want}.
+Материал идёт в короткие вертикальные видео. {need}
 Ответь только JSON: {{"ok": true/false, "reason": "кратко"}}"""
     try:
         r = anthropic.Anthropic().messages.create(
@@ -102,6 +109,7 @@ def scout(cfg, dest="inbox", sources_file="sources.yaml"):
     sc = cfg.get("scout", {})
     seen = _seen()
     src, blocked = _from_sources(sources_file, sc.get("per_query", 8))
+    src_ids = {v for v, _ in src}
     cands = [(v, u, "any") for v, u in src]
     queries = [] if (sc.get("whitelist_only") and src) else sc.get("queries", [])  # только белый список каналов
     for q in queries:
@@ -128,30 +136,37 @@ def scout(cfg, dest="inbox", sources_file="sources.yaml"):
         if any(b in author for b in blocked):
             continue
         if not (sc.get("min_duration", 60) <= (m.get("duration") or 0) <= sc.get("max_duration", 1800)):
+            print(f"[scout] {vid}: длительность {m.get('duration')}с вне диапазона — {m.get('title')}")
             continue
-        if (m.get("view_count") or 0) < sc.get("min_views", 0):
+        if vid not in src_ids and (m.get("view_count") or 0) < sc.get("min_views", 0):
             continue
         title = (m.get("title") or "").lower()
-        bad = next((x for x in sc.get("exclude", []) if x.lower() in title), None)
-        if not bad and re.search(r"#\s?\d+|episode \d+|part \d+|vol\.? ?\d+", title):
+        trusted = vid in src_ids  # канал из белого списка: слова «нарезка/моменты» там нормальны
+        excl = sc.get("exclude_whitelist", ["розыгрыш", "giveaway", "конкурс", "раздача"]) if trusted else sc.get("exclude", [])
+        bad = next((x for x in excl if x.lower() in title), None)
+        if not bad and not trusted and re.search(r"#\s?\d+|episode \d+|part \d+|vol\.? ?\d+", title):
             bad = "номер выпуска (серия-сборник)"
         if bad:
             print(f"[scout] {vid}: сборка/нерелевантно ('{bad}'), пропуск — {m.get('title')}")
             continue
         kws = [k.lower() for k in sc.get("keywords", [])]
         text = " ".join([m.get("title") or "", " ".join(m.get("tags") or [])]).lower()
-        if kws and not any(k in text for k in kws):
+        if kws and not trusted and not any(k in text for k in kws):
             print(f"[scout] {vid}: не про CS, пропуск — {m.get('title')}")
             continue
         if lang == "ru" and not _is_russian(m):
             print(f"[scout] {vid}: не на русском, пропуск — {m.get('title')}")
             continue
         if sc.get("vet") and os.environ.get("ANTHROPIC_API_KEY"):
-            ok, why = _vet(m, lang, cfg.get("model", "claude-sonnet-5-5"))
+            ok, why = _vet(m, "trusted" if trusted else lang, cfg.get("model", "claude-sonnet-5-5"))
             if not ok:
                 print(f"[scout] {vid}: Claude отклонил ({why}) — {m.get('title')}")
                 continue
-        _download(url, dest, sc.get("max_height", 1080))
+        try:
+            _download(url, dest, sc.get("max_height", 1080))
+        except Exception as e:
+            print(f"[scout] {vid}: не скачалось ({str(e)[:120]})")
+            continue
         credit = (
             f"{m.get('title')}\n"
             f"Источник: «{m.get('title')}», канал {m.get('uploader')}, {m.get('webpage_url')}"

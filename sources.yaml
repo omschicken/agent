@@ -1,4 +1,19 @@
-# Дополнительные источники, помимо поисковых запросов из config.yaml
-channels: []      # например: https://www.youtube.com/@HLTV/videos
+# Белый список авторов: записи их стримов, из которых агент сам вырезает рейджи, смешное и хайлайты.
+# Каналы подобраны через resolve_channels.py; какие из них официальные, а какие фанатские - проверьте сами.
+channels:
+  - https://www.youtube.com/channel/UCDqlBCW2D1CD8m49YDoEv4g/videos   # Buster Rofls
+  - https://www.youtube.com/channel/UCt4XCfHJfFFhAx8BU4SH9tA/videos   # Evelone Rofls
+  - https://www.youtube.com/channel/UCZki41-JNWogw2bQPq-sMpw/videos   # StRoGo Rofls
+  - https://www.youtube.com/channel/UC7fUfdQIKfD2_WIc3Aj0kaA/videos   # DANGERLYOHA ROFLS
+  - https://www.youtube.com/channel/UCklpYBfCfHFtHSBj0ZkiGwQ/videos   # Моменты Шадоукека
+  - https://www.youtube.com/channel/UCTyqcF15T3T1A26Pr3Ljcdw/videos   # DEKO CHILL
+  - https://www.youtube.com/channel/UChGHtr84DSKTIl6_9MjMwQA/videos   # M3WSU CHILL
+  - https://www.youtube.com/channel/UC183UEbpxBmD74XDMMAXnrQ/videos   # chopper :O
+  - https://www.youtube.com/channel/UCzo6_n-xVOUqvC5m8IDDdFA/videos   # CHOPPER НАРЕЗКИ
+  - https://www.youtube.com/channel/UCtYriju-qv3tgo4STXiv9ww/videos   # РЕЖУ SKYWHYWALKER
+  - https://www.youtube.com/channel/UCQPCV-MaKUGHI3BhiLP2_DQ/videos   # ct0m CHILL
+  - https://www.youtube.com/channel/UCfVmh-yph6TBB3gYOQlD_FQ/videos   # INK MATE CHILL
+  - https://www.youtube.com/channel/UCw_09chvmXy_zZJz2Tj2-mg/videos   # Recrent
+  - https://www.youtube.com/channel/UCqtlzPK6hrSxIFuzZ32Fjxw/videos   # Inkmate0
 urls: []          # любые ссылки: Twitch-клипы, X, Reddit, отдельные видео
-blocklist: []     # имена каналов, которые не берём (попросили убрать и т.п.)
+blocklist: []     # имена каналов, которые не берём

@@ -1,0 +1,11 @@
+brand:
+  site_name: "YOURCASES.GG"
+  promo_code: "SHORTS"
+  banner_text: "Открывай кейсы на {site_name} | промо {promo_code}"
+  disclaimer: "18+ Играйте ответственно"
+clip:
+  min_sec: 8
+  max_sec: 40
+  per_source: 5             # сколько клипов резать из одного видео
+platforms: [youtube, tiktok, instagram]
+model: claude-sonnet-5-5

@@ -44,13 +44,14 @@ for src in glob.glob("inbox/*.mp4"):
         v = judge.look(src, title, cfg["model"], n=cfg["judge"].get("source_frames", 8))
         ok, why = judge.verdict(v, cfg["judge"], source=True)
         if not ok:
-            reject(src, why)
+            reject(src, f"{why} | {(v or {}).get('reason', '')}")
             continue
         crop = None if cfg["judge"].get("allow_webcam") else judge.crop_for(v)
         if crop:
             print(f"[judge] {name}: срезаю вебкамеру, оставляю область {tuple(round(c, 2) for c in crop)}")
 
     notes = {}  # (start, end) -> описание момента для копирайтера
+    meta = {}   # (start, end) -> данные момента (сохраняем в json рядом с клипом)
     if cfg["clip"].get("mode") == "transcript" and os.environ.get("ANTHROPIC_API_KEY"):
         # запись стрима: Whisper + Claude находят рейджи/смешное/хайлайты по смыслу
         from agents import moments
@@ -59,10 +60,15 @@ for src in glob.glob("inbox/*.mp4"):
         found = moments.find_moments(
             src, title, dur, cfg["clip"]["per_source"] * 2, cfg["model"],
             cfg["clip"].get("whisper_model", "small"),
-            cfg["clip"].get("moment_min_sec", 15), cfg["clip"].get("moment_max_sec", 45))
+            cfg["clip"].get("moment_min_sec", 15), cfg["clip"].get("moment_max_sec", 45),
+            min_loud_db=cfg["clip"].get("min_loud_db", 12.0), min_laugh=cfg["clip"].get("min_laugh", 0.2),
+            min_score=cfg["clip"].get("min_score", 7))
+        if not found:
+            print(f"[moments] {name}: сильных моментов нет, пропускаю видео")
         spans = [(m["start"], m["end"]) for m in found]
         for m in found:
             notes[(m["start"], m["end"])] = f"{m.get('kind')}: «{m.get('quote')}» ({m.get('why')})"
+            meta[(m["start"], m["end"])] = {**m, "source": name}
             print(f"[moments] {m['start']:.0f}-{m['end']:.0f}с {m.get('kind')} {m.get('score')}/10 «{m.get('quote')}»")
     else:
         spans = curator.find_highlights(
@@ -86,6 +92,8 @@ for src in glob.glob("inbox/*.mp4"):
         moment_note = note + (f"\nМомент {notes[(s, e)]}" if (s, e) in notes else "")
         copy = copywriter.write_copy(name, moment_note, cfg["brand"], cfg["platforms"], cfg["model"],
                                      cfg.get("copy_provider", "auto"))
+        if (s, e) in meta:
+            copy["_moment"] = meta[(s, e)]
         with open(out[:-4] + ".json", "w", encoding="utf-8") as f:
             json.dump(copy, f, ensure_ascii=False, indent=2)
         print("ready:", out)

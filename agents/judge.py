@@ -22,9 +22,11 @@ PROMPT = """Ты отбираешь материал для коротких в�
  "face_outside_webcam": <true, если лица/люди видны ГДЕ-ТО ЕЩЁ, кроме этого оверлея: на весь экран, IRL-кадры,
                          несколько окон с камерами>,
  "is_cs2_gameplay": <true, если это игровой процесс/интерфейс именно CS2 или CS:GO>,
- "third_party_site": <true, если открытие/дроп показан на сторонней сайте-кейсах (не в клиенте CS2/Steam-инвентаре),
-                      или видны логотипы/баннеры/промокоды чужих сайтов>,
- "giveaway_or_promo": <true, если розыгрыш, giveaway, конкурс, реклама чужого проекта>,
+ "third_party_site": <true ТОЛЬКО если видны сайты-конкуренты нашего проекта: сторонние сайты кейсов / открытия кейсов /
+                      скинов / ставок / казино (их интерфейс, логотип, баннер, промокод). Faceit, HLTV, Steam, Twitch, YouTube,
+                      донат-алерты, обычные оверлеи стримера, логотипы турниров и команд - это НЕ чужая реклама, ставь false>,
+ "giveaway_or_promo": <true ТОЛЬКО если явно идёт розыгрыш/giveaway/конкурс на призы или реклама стороннего сайта
+                       кейсов/скинов/казино. Обычный стрим без этого - false>,
  "content_type": "clutch_ace" | "funny_fail" | "case_drop" | "lifehack_tutorial" | "talking_or_settings" | "other",
  "rare_drop": <true, если виден редкий дроп: нож, перчатки, золотой/красный предмет>,
  "score": <0-10: насколько это цепляющий законченный момент для шортса. Открытие кейса со скучным дропом - 0-3.
@@ -95,7 +97,7 @@ def look(path, ctx, model, n=8, start=0.0, end=None, crop=None):
         content.append({"type": "text", "text": PROMPT.format(n=len(files), ctx=ctx[:200])})
         try:
             r = anthropic.Anthropic().messages.create(
-                model=model, max_tokens=1000, messages=[{"role": "user", "content": content}])
+                model=model, max_tokens=2000, messages=[{"role": "user", "content": content}])
             text = "".join(b.text for b in r.content if b.type == "text").strip().strip("`").removeprefix("json").strip()
             v = json.loads(text)
             v["_n"] = len(files)

@@ -3,3 +3,5 @@ pyyaml
 google-api-python-client
 google-auth-oauthlib
 yt-dlp
+torch
+transformers

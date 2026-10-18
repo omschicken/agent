@@ -9,3 +9,4 @@ clip:
   per_source: 5             # сколько клипов резать из одного видео
 platforms: [youtube, tiktok, instagram]
 model: claude-sonnet-5-5
+copy_provider: auto         # auto = Claude если есть ANTHROPIC_API_KEY, иначе шаблоны; claude | template

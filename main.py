@@ -20,7 +20,8 @@ for src in glob.glob("inbox/*.mp4"):
     for i, (s, e) in enumerate(spans, 1):
         out = f"out/{name}_{i}.mp4"
         editor.render(src, s, e, out, cfg["brand"])
-        copy = copywriter.write_copy(name, note, cfg["brand"], cfg["platforms"], cfg["model"])
+        copy = copywriter.write_copy(name, note, cfg["brand"], cfg["platforms"], cfg["model"],
+                                     cfg.get("copy_provider", "auto"))
         with open(out[:-4] + ".json", "w", encoding="utf-8") as f:
             json.dump(copy, f, ensure_ascii=False, indent=2)
         print("ready:", out)

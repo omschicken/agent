@@ -1,21 +1,30 @@
-brand:
+﻿brand:
   site_name: "YOURCASES.GG"
   promo_code: "SHORTS"
   banner_text: "Открывай кейсы на {site_name} | промо {promo_code}"
   disclaimer: "18+ Играйте ответственно"
 clip:
-  min_sec: 8
+  min_sec: 6
   max_sec: 40
-  per_source: 5             # сколько клипов резать из одного видео
+  per_source: 3             # сколько клипов резать из одного видео
 scout:
-  queries: ["cs2 highlights", "cs2 funny moments", "cs2 case opening"]
-  per_query: 8
+  # нужны одиночные моменты, а не сборки
+  queries:
+    - "cs2 insane clutch"
+    - "cs2 1v5 ace"
+    - "cs2 funny moment"
+    - "cs2 lifehack"
+    - "cs2 trick tutorial"
+    - "cs2 case opening"
+    - "cs2 knife unboxing"
+  per_query: 10
   keywords: [cs2, csgo, cs:go, counter-strike, counter strike, кс2, кс го, ксго]
-  period: week             # week | month | any
-  min_views: 10000
+  exclude: [best moments, ultra rare, klipy, tygodnia, week, clips of, fragmovie, frag movie, montage, compilation, top 10, top 5, top 20, best of, highlights, moments of, weekly, "#shorts", монтаж, подборка, топ ]
+  period: month             # week | month | any
+  min_views: 5000
   max_new_videos: 3         # сколько новых видео брать за запуск
-  min_duration: 60
-  max_duration: 1800
+  min_duration: 10
+  max_duration: 600
   max_height: 1080
 platforms: [youtube, tiktok, instagram]
 model: claude-sonnet-5-5

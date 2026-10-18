@@ -8,6 +8,7 @@
 """
 import json
 import os
+import re
 from urllib.parse import quote_plus
 
 import yaml
@@ -90,6 +91,13 @@ def scout(cfg, dest="inbox", sources_file="sources.yaml"):
         if not (sc.get("min_duration", 60) <= (m.get("duration") or 0) <= sc.get("max_duration", 1800)):
             continue
         if (m.get("view_count") or 0) < sc.get("min_views", 0):
+            continue
+        title = (m.get("title") or "").lower()
+        bad = next((x for x in sc.get("exclude", []) if x.lower() in title), None)
+        if not bad and re.search(r"#\s?\d+|episode \d+|part \d+|vol\.? ?\d+", title):
+            bad = "номер выпуска (серия-сборник)"
+        if bad:
+            print(f"[scout] {vid}: сборка/нерелевантно ('{bad}'), пропуск — {m.get('title')}")
             continue
         kws = [k.lower() for k in sc.get("keywords", [])]
         text = " ".join([m.get("title") or "", " ".join(m.get("tags") or [])]).lower()

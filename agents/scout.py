@@ -55,6 +55,38 @@ def _from_sources(path, limit):
     return out, {b.lower() for b in cfg.get("blocklist", [])}
 
 
+def _is_russian(m):
+    lang = (m.get("language") or "").lower()
+    if lang:
+        return lang.startswith("ru")
+    letters = [c for c in (m.get("title") or "") if c.isalpha()]
+    return bool(letters) and sum("Ѐ" <= c <= "ӿ" for c in letters) / len(letters) >= 0.4
+
+
+def _vet(m, lang, model):
+    """Claude по названию/описанию решает: один цельный момент (клатч, фейл, лайфхак, кейс), а не сборка."""
+    import anthropic
+
+    want = "на русском языке" if lang == "ru" else "любой язык, турнирный/про-хайлайт"
+    prompt = f"""Видео про CS2. Название: {m.get('title')}
+Канал: {m.get('uploader')}; длительность: {m.get('duration')} c
+Описание: {(m.get('description') or '')[:600]}
+Теги: {', '.join((m.get('tags') or [])[:15])}
+Нужен контент для коротких вертикальных видео: смешной или полезный (лайфхак, раскидка, фишка), открытие кейсов
+или одиночный сильный момент (клатч/эйс одного игрока). НЕ подходят: сборки/нарезки из многих моментов
+разных игроков, фрагмуви, топы, новости, длинные стримы, видео про другие игры. Язык: {want}.
+Ответь только JSON: {{"ok": true/false, "reason": "кратко"}}"""
+    try:
+        r = anthropic.Anthropic().messages.create(
+            model=model, max_tokens=500, messages=[{"role": "user", "content": prompt}])
+        text = "".join(b.text for b in r.content if b.type == "text").strip().strip("`").removeprefix("json").strip()
+        j = json.loads(text)
+        return bool(j.get("ok")), j.get("reason", "")
+    except Exception as e:  # нет денег/сети - не блокируем разведчика, фильтры по словам уже отработали
+        print(f"[scout] vet недоступен ({e})")
+        return True, ""
+
+
 def _download(url, dest, max_height):
     opts = {
         "quiet": True, "noprogress": True,
@@ -69,12 +101,18 @@ def _download(url, dest, max_height):
 def scout(cfg, dest="inbox", sources_file="sources.yaml"):
     sc = cfg.get("scout", {})
     seen = _seen()
-    cands, blocked = _from_sources(sources_file, sc.get("per_query", 8))
+    src, blocked = _from_sources(sources_file, sc.get("per_query", 8))
+    cands = [(v, u, "any") for v, u in src]
     for q in sc.get("queries", []):
-        cands += _search(q, sc.get("per_query", 8), sc.get("period", "week"))
+        q = {"q": q, "lang": "any"} if isinstance(q, str) else q
+        cands += [(v, u, q.get("lang", "any")) for v, u in
+                  _search(q["q"], sc.get("per_query", 8), sc.get("period", "week"))]
 
     got = 0
-    for vid, url in dict(cands).items():
+    langs = {}
+    for v, u, lg in cands:
+        langs.setdefault(v, (u, lg))
+    for vid, (url, lang) in langs.items():
         if vid in seen:
             continue
         if got >= sc.get("max_new_videos", 3):
@@ -104,6 +142,14 @@ def scout(cfg, dest="inbox", sources_file="sources.yaml"):
         if kws and not any(k in text for k in kws):
             print(f"[scout] {vid}: не про CS, пропуск — {m.get('title')}")
             continue
+        if lang == "ru" and not _is_russian(m):
+            print(f"[scout] {vid}: не на русском, пропуск — {m.get('title')}")
+            continue
+        if sc.get("vet") and os.environ.get("ANTHROPIC_API_KEY"):
+            ok, why = _vet(m, lang, cfg.get("model", "claude-sonnet-5-5"))
+            if not ok:
+                print(f"[scout] {vid}: Claude отклонил ({why}) — {m.get('title')}")
+                continue
         _download(url, dest, sc.get("max_height", 1080))
         credit = (
             f"{m.get('title')}\n"

@@ -8,15 +8,16 @@ def _esc(s):
     return s.replace("\\", "\\\\").replace(":", "\\:").replace("'", "’").replace("%", "\\%")
 
 
-def render(src, start, end, out, brand, crop=None):
-    """crop - (x, y, w, h) в долях кадра: оставляемая область (срез вебкамеры стримера)."""
-    from agents.judge import crop_filter
+def render(src, start, end, out, brand, crop=None, covers=None):
+    """crop - (x, y, w, h) в долях кадра: оставляемая область (срез вебкамеры стримера);
+    covers - прямоугольники чужой рекламы, которые закрываем размытием."""
+    from agents.judge import prefix_graph
     banner_raw = brand["banner_text"].format(**brand)
     banner_size = max(24, min(44, int(1000 / (len(banner_raw) * 0.6))))  # влезает в 1080px
     banner = _esc(banner_raw)
     disc = _esc(brand["disclaimer"])
     vf = (
-        f"[0:v]{crop_filter(crop)}split[a][b];"
+        f"{prefix_graph(covers, crop)}[pre]split[a][b];"
         "[a]scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920,boxblur=30:5[bg];"
         "[b]scale=1080:-2[fg];"
         "[bg][fg]overlay=(W-w)/2:(H-h)/2[v];"

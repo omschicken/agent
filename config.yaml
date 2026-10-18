@@ -37,6 +37,16 @@ scout:
   max_duration: 600
   max_height: 1080
   vet: true                 # Claude по названию/описанию проверяет: один момент, не сборка, нужный язык
+twitch:                     # режим --twitch: моменты по топ-клипам зрителей, вырезанные из записи стрима
+  logins: [buster, evelone2004, strogo, m3wsu, deko, skywhywalker, dangerlyoha, dmitry_lixxx, recrent, inkmate0, ct0m]
+  period: LAST_WEEK         # LAST_DAY | LAST_WEEK | LAST_MONTH | ALL_TIME
+  game_contains: counter-strike
+  min_views: 500            # клип зрителей набрал не меньше просмотров
+  per_channel: 3            # топ-N клипов с каждого стримера
+  max_new: 10               # сколько моментов брать за запуск
+  lead: 12                  # секунд подводки до отметки клипа
+  tail: 6                   # секунд после конца клипа
+  max_height: 720
 judge:                      # Claude смотрит кадры (нужен ANTHROPIC_API_KEY)
   enabled: true
   source_frames: 8          # кадров для проверки всего видео

@@ -9,3 +9,4 @@ out/*
 rejected/
 cache/
 seen.json
+seen_twitch.json

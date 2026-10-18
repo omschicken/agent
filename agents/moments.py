@@ -35,6 +35,56 @@ PROMPT = """Ты отбираешь моменты из записи стрим�
 {cands}"""
 
 
+TRIM_PROMPT = """Это вырезка {dur:.0f} с из стрима по CS2. Зрители отметили здесь момент клипом (название клипа: «{clip}»,
+просмотров: {views}). Название видео: «{title}».
+Звук: {audio}
+Расшифровка (время в секундах от начала вырезки, метка [+N дБ] - фраза громче обычного):
+{text}
+
+Реши, есть ли тут настоящий РЕЙДЖ (стример взрывается, орёт, тильтует), СМЕШНОЕ (шутка/фейл/нелепость, смех) или
+ХАЙЛАЙТ (клатч/красивый килл с бурной реакцией). Если момент в основном ТИХИЙ (ровный разговор, обычная смерть,
+ничего не происходит) - верни ok=false.
+Если ok: границы {min_sec}-{max_sec} с внутри вырезки: ПОДВОДКА 4-8 с до пика (зритель понимает ситуацию), потом пик,
+реакция/развязка; конец когда эмоция отыграна, не посреди фразы. Если есть голос - границы по таймкодам фраз.
+Ответь ТОЛЬКО JSON:
+{{"ok": true/false, "start": <сек>, "end": <сек>, "kind": "rage|funny|highlight", "score": <1-10>,
+  "quote": "<самая яркая фраза или '' если речи нет>", "why": "<кратко: что произошло>"}}"""
+
+
+def trim_segment(path, title, duration, meta, model, whisper_size="large-v3-turbo", min_sec=12, max_sec=45,
+                 min_score=6):
+    """Для вырезки по клипу зрителей: подтверждаем момент и ставим точные границы. Возвращает dict или None."""
+    segs = _add_loudness(path, transcribe(path, whisper_size))
+    text = _window_text(segs, 0, duration) or "  (речи нет)"
+    try:
+        x = audio_events._decode(path)
+        ev = audio_events.loud_events(x)
+    except Exception:
+        ev = []
+    audio = ("; ".join(f"скачок +{e['peak_db']:.0f} дБ в {e['t0']:.0f}-{e['t1']:.0f} с" for e in
+                       sorted(ev, key=lambda e: -e["peak_db"])[:4]) or "заметных скачков громкости нет")
+    r = anthropic.Anthropic().messages.create(
+        model=model, max_tokens=1500,
+        messages=[{"role": "user", "content": TRIM_PROMPT.format(
+            dur=duration, clip=meta.get("clip_title", ""), views=meta.get("views", "?"), title=title,
+            audio=audio, text=text, min_sec=min_sec, max_sec=max_sec)}])
+    raw = "".join(b.text for b in r.content if b.type == "text").strip().strip("`").removeprefix("json").strip()
+    try:
+        m = json.loads(raw)
+    except json.JSONDecodeError:
+        return None
+    if not m.get("ok") or m.get("score", 0) < min_score:
+        return {"ok": False, "why": m.get("why", ""), "score": m.get("score", 0)}
+    s = max(0.0, float(m["start"]))
+    e = min(duration, float(m["end"]))
+    if e - s < min_sec:
+        e = min(duration, s + min_sec)
+        s = max(0.0, e - min_sec)
+    if e - s > max_sec:
+        e = s + max_sec
+    return {**m, "start": round(s, 1), "end": round(e, 1)}
+
+
 def _tag(db):
     return f" [+{db}дБ]" if db >= 5 else ""
 

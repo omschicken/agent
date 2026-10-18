@@ -16,7 +16,8 @@ HASHTAGS = ["cs2", "csgo", "counterstrike", "cs2highlights", "кс2", "хайл�
 
 def _template_copy(filename, note, brand, platforms):
     topic = (note.splitlines()[0] if note else filename.replace("_", " ")).strip()[:50]
-    credit = f"\nИсточник: {note}" if note else ""
+    rest = "\n".join(note.splitlines()[1:]).strip()  # строки после названия (источник/автор)
+    credit = f"\n{rest}" if rest else ""
     out = {}
     for p in platforms:
         tags = random.sample(HASHTAGS, 5)

@@ -7,6 +7,16 @@ clip:
   min_sec: 8
   max_sec: 40
   per_source: 5             # сколько клипов резать из одного видео
+scout:
+  queries: ["cs2 highlights", "cs2 funny moments", "cs2 case opening"]
+  per_query: 8
+  keywords: [cs2, csgo, cs:go, counter-strike, counter strike, кс2, кс го, ксго]
+  period: week             # week | month | any
+  min_views: 10000
+  max_new_videos: 3         # сколько новых видео брать за запуск
+  min_duration: 60
+  max_duration: 1800
+  max_height: 1080
 platforms: [youtube, tiktok, instagram]
 model: claude-sonnet-5-5
 copy_provider: auto         # auto = Claude если есть ANTHROPIC_API_KEY, иначе шаблоны; claude | template

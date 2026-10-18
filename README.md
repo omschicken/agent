@@ -8,6 +8,11 @@
 3. `ANTHROPIC_API_KEY` в переменных окружения.
 4. Для YouTube: `client_secret.json` из Google Cloud (YouTube Data API v3).
 
+## Автопоиск видео
+`python main.py --scout` - агент сам ищет свежие CS2-ролики на YouTube (запросы и фильтры в `config.yaml -> scout`),
+качает через yt-dlp, пишет источник в `inbox/<id>.txt` и сразу нарезает. Дополнительные каналы/ссылки и блоклист - в `sources.yaml`.
+Уже обработанные видео запоминаются в `seen.json`. Нужен deno (для YouTube): `winget install DenoLand.Deno`.
+
 ## Запуск
 Положите видео в `inbox/` (опционально рядом `имя.txt` с описанием момента и источником).
 

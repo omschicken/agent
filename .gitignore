@@ -13,3 +13,7 @@ seen_twitch.json
 examples/src/
 old_out/
 examples/src/
+banner/*.mov
+banner/preview.mp4
+banner/overlay_test.mp4
+banner/stills/

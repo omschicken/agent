@@ -26,23 +26,36 @@ def render(src, start, end, out, brand, crop=None, covers=None, caption=None):
     """crop - (x, y, w, h) в долях кадра: оставляемая область (срез вебкамеры стримера);
     covers - прямоугольники чужой рекламы, которые закрываем размытием."""
     from agents.judge import prefix_graph
-    banner_raw = brand["banner_text"].format(**brand)
-    banner_size = max(24, min(44, int(1000 / (len(banner_raw) * 0.6))))  # влезает в 1080px
-    banner = _esc(banner_raw)
-    disc = _esc(brand["disclaimer"])
-    vf = (
+    import os
+    base = (
         f"{prefix_graph(covers, crop)}[pre]split[a][b];"
         "[a]scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920,boxblur=30:5[bg];"
         "[b]scale=1080:-2[fg];"
         "[bg][fg]overlay=(W-w)/2:(H-h)/2[v];"
-        f"[v]{_caption_filters(caption)}drawbox=x=0:y=1500:w=1080:h=130:color=black@0.65:t=fill,"
-        f"drawtext={FONT}text='{banner}':fontcolor=white:fontsize={banner_size}:x=(w-text_w)/2:y=1535,"
-        f"drawtext={FONT}text='{disc}':fontcolor=white@0.8:fontsize=28:x=(w-text_w)/2:y=1590[o]"
     )
+    cmd = ["ffmpeg", "-y", "-ss", str(start), "-to", str(end), "-i", src]
+    bv = brand.get("banner_video")
+    if bv and os.path.exists(bv):
+        # готовый анимированный баннер (MOV/WebM с прозрачностью): старт через banner_delay с, потом замирает на последнем кадре
+        if bv.lower().endswith(".webm"):
+            cmd += ["-c:v", "libvpx-vp9"]  # штатный декодер ffmpeg не читает альфу VP9
+        cmd += ["-i", bv]
+        delay = brand.get("banner_delay", 1.0)
+        bottom = brand.get("banner_bottom", 240)  # отступ от низа кадра: зона интерфейса TikTok/Reels
+        vf = (base + f"[v]{_caption_filters(caption)}null[vc];"
+              f"[1:v]scale=1080:-2,format=rgba,setpts=PTS+{delay}/TB[bn];"
+              f"[vc][bn]overlay=0:H-h-{bottom}:eof_action=repeat:shortest=1[o]")
+    else:  # запасной вариант: статичная плашка с текстом
+        banner_raw = brand["banner_text"].format(**brand)
+        banner_size = max(24, min(44, int(1000 / (len(banner_raw) * 0.6))))  # влезает в 1080px
+        banner = _esc(banner_raw)
+        disc = _esc(brand["disclaimer"])
+        vf = (base + f"[v]{_caption_filters(caption)}drawbox=x=0:y=1500:w=1080:h=130:color=black@0.65:t=fill,"
+              f"drawtext={FONT}text='{banner}':fontcolor=white:fontsize={banner_size}:x=(w-text_w)/2:y=1535,"
+              f"drawtext={FONT}text='{disc}':fontcolor=white@0.8:fontsize=28:x=(w-text_w)/2:y=1590[o]")
     run(
-        ["ffmpeg", "-y", "-ss", str(start), "-to", str(end), "-i", src,
-         "-filter_complex", vf, "-map", "[o]", "-map", "0:a?",
-         "-c:v", "libx264", "-preset", "fast", "-crf", "21", "-c:a", "aac", "-b:a", "160k", out],
+        cmd + ["-filter_complex", vf, "-map", "[o]", "-map", "0:a?",
+               "-c:v", "libx264", "-preset", "fast", "-crf", "21", "-c:a", "aac", "-b:a", "160k", out],
         check=True,
     )
     return out

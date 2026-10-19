@@ -24,17 +24,15 @@
   .bg { left: 0; top: 0; width: 1955px; height: 460px; }
 
   .l { opacity: 0; }
-  /* ПОЛ: основание кейса стоит на линии y=428 (рабочее поле 1955x460). Тени центрированы на этой линии и лежат ПОД кейсом */
-  .caseGroup { position: absolute; left: 960px; top: 0; width: 520px; height: 460px; }
-  .caseGroup .amb { position: absolute; left: -12px; top: 318px; width: 548px; height: 146px; border-radius: 50%; opacity: 0;
-                    background: radial-gradient(ellipse at center, rgba(0,0,0,.66) 0%, rgba(0,0,0,.36) 48%, rgba(0,0,0,0) 74%); filter: blur(5px);
-                    animation: shGrow 1s ease-out 3.1s both; }
-  .caseGroup .contact { position: absolute; left: 36px; top: 334px; width: 462px; height: 108px; border-radius: 50%; opacity: 0;
-                        background: radial-gradient(ellipse at center, rgba(0,0,0,.92) 0%, rgba(0,0,0,.55) 55%, rgba(0,0,0,0) 82%); filter: blur(3px);
-                        animation: shGrow 1s ease-out 3.1s both; }
+  /* ПОЛ. Кейс снят в 3/4 сверху: его основание - ромб L(1084,391) N(1356,440) R(1477,385) F(1216,366) в рабочем поле 1955x460.
+     Свет слева, поэтому тень тянется ВПРАВО по полу; по нижней кромке тонкая жёсткая линия контакта. */
+  .floorShadow { position: absolute; left: 0; top: 0; width: 1955px; height: 460px; overflow: visible; opacity: 0;
+                 transform-origin: 1290px 405px; animation: shGrow 1s ease-out 3.1s both; }
+  .rifleSh { position: absolute; left: 0; top: 0; width: 1955px; height: 460px; overflow: visible; opacity: 0; animation: fadeIn .3s ease-out 4.6s both; }
+  .caseGroup { position: absolute; left: 960px; top: 0; width: 640px; height: 460px; }
   /* кейс падает на пол, подпрыгивает и оседает; тень растёт по мере падения и "дышит" на отскоке */
-  .caseDrop { position: absolute; inset: 0; transform-origin: 50% 428px; animation: caseDrop 1s linear 3.1s both; }
-  .caseW { position: absolute; left: 30px; top: 162px; width: 450px; }
+  .caseDrop { position: absolute; inset: 0; transform-origin: 50% 440px; animation: caseDrop 1s linear 3.1s both; }
+  .caseW { position: absolute; left: 50px; top: 145px; width: 500px; }
   .caseW img.main { position: relative; width: 100%; }
   @keyframes caseDrop {
     0%   { transform: translateY(-340px); opacity: 0; animation-timing-function: cubic-bezier(.55,0,.9,.55) }
@@ -48,34 +46,33 @@
   }
   @keyframes shGrow {
     0%   { transform: scale(.35); opacity: 0 }
-    50%  { transform: scale(1); opacity: .95 }
-    68%  { transform: scale(.9); opacity: .7 }
-    80%  { transform: scale(1); opacity: .95 }
-    90%  { transform: scale(.97); opacity: .85 }
-    100% { transform: scale(1); opacity: .95 }
+    50%  { transform: scale(1); opacity: 1 }
+    68%  { transform: scale(.9); opacity: .75 }
+    80%  { transform: scale(1); opacity: 1 }
+    90%  { transform: scale(.97); opacity: .9 }
+    100% { transform: scale(1); opacity: 1 }
   }
   /* пыль при ударе о пол */
-  .puff { position: absolute; top: 352px; width: 90px; height: 50px; border-radius: 50%; opacity: 0; filter: blur(6px);
+  .puff { position: absolute; width: 90px; height: 50px; border-radius: 50%; opacity: 0; filter: blur(6px);
           background: radial-gradient(ellipse at center, rgba(255,250,240,.7) 0%, rgba(255,250,240,0) 70%); }
-  .puff.pl { left: 4px; animation: puffL .75s ease-out 3.62s both; }
-  .puff.pr { left: 440px; animation: puffR .75s ease-out 3.62s both; }
+  .puff.pl { left: 70px; top: 372px; animation: puffL .75s ease-out 3.62s both; }
+  .puff.pr { left: 500px; top: 362px; animation: puffR .75s ease-out 3.62s both; }
   @keyframes puffL { 0% { transform: translateX(0) scale(.3); opacity: .9 } 100% { transform: translateX(-70px) scale(1.9); opacity: 0 } }
   @keyframes puffR { 0% { transform: translateX(0) scale(.3); opacity: .9 } 100% { transform: translateX(70px) scale(1.9); opacity: 0 } }
 
-  /* автомат падает сверху на кейс, бьётся о правый угол крышки, откатывается и облокачивается; приклад ложится на пол */
+  /* автомат: стоит на двух точках пола (магазин и приклад на y=432), ствол лежит на правом верхнем углу крышки кейса.
+     Падает сверху, раскачивается вокруг приклада и успокаивается. */
   .rifleG { position: absolute; left: 0; top: 0; width: 1955px; height: 460px; }
-  .rifleG .contactR { position: absolute; left: 1480px; top: 384px; width: 340px; height: 40px; border-radius: 50%; opacity: 0;
-                      background: radial-gradient(ellipse at center, rgba(0,0,0,.8) 0%, rgba(0,0,0,.42) 55%, rgba(0,0,0,0) 82%); filter: blur(4px);
-                      animation: fadeIn .3s ease-out 4.62s both; }
-  .rifleW { position: absolute; left: 1230px; top: 78px; width: 580px; transform-origin: 82% 86%; animation: rifleFall 1.05s linear 4.05s both; }
+  .rifleW { position: absolute; left: 1236px; top: 143px; width: 540px; transform-origin: 97.1% 90%; animation: rifleFall 1.05s linear 4.05s both; }
+  .rifleW img { transform: rotate(8.3deg); transform-origin: 97.1% 90%; }
   .rifleW img.main { position: relative; width: 100%; }
   @keyframes rifleFall {
-    0%   { transform: translate(70px,-300px) rotate(34deg); opacity: 0; animation-timing-function: cubic-bezier(.55,0,.9,.55) }
+    0%   { transform: translate(60px,-330px) rotate(26deg); opacity: 0; animation-timing-function: cubic-bezier(.55,0,.9,.55) }
     10%  { opacity: 1 }
     52%  { transform: translate(0,0) rotate(0deg); animation-timing-function: ease-out }
-    60%  { transform: translate(0,0) rotate(-2.5deg); animation-timing-function: ease-in-out }
-    74%  { transform: translate(0,-6px) rotate(3.2deg); animation-timing-function: ease-in-out }
-    88%  { transform: translate(0,0) rotate(-1deg); animation-timing-function: ease-in-out }
+    60%  { transform: translate(0,0) rotate(-2.2deg); animation-timing-function: ease-in-out }
+    74%  { transform: translate(0,-5px) rotate(2.6deg); animation-timing-function: ease-in-out }
+    88%  { transform: translate(0,0) rotate(-.8deg); animation-timing-function: ease-in-out }
     100% { transform: translate(0,0) rotate(0deg); opacity: 1 }
   }
   @keyframes fadeIn { 0% { opacity: 0 } 100% { opacity: 1 } }
@@ -126,9 +123,25 @@
 <div class="shell"><div class="card">
   <div class="design" id="design">
     <img class="bg" src="card.png" alt="">
-    <div class="rifleG"><div class="contactR"></div>
-      <div class="rifleW l"><img class="main" src="assets/rifle.png" alt=""><img class="sheen" src="assets/rifle.png" alt=""></div></div>
-    <div class="caseGroup"><div class="amb"></div><div class="contact"></div>
+    <svg class="floorShadow" viewBox="0 0 1955 460" aria-hidden="true">
+      <defs>
+        <linearGradient id="castG" gradientUnits="userSpaceOnUse" x1="1355" y1="0" x2="1870" y2="0">
+          <stop offset="0" stop-color="#000" stop-opacity=".66"/><stop offset=".55" stop-color="#000" stop-opacity=".3"/><stop offset="1" stop-color="#000" stop-opacity="0"/>
+        </linearGradient>
+        <filter id="b14" x="-30%" y="-80%" width="160%" height="260%"><feGaussianBlur stdDeviation="14"/></filter>
+        <filter id="b6" x="-30%" y="-80%" width="160%" height="260%"><feGaussianBlur stdDeviation="6"/></filter>
+        <filter id="b3" x="-30%" y="-80%" width="160%" height="260%"><feGaussianBlur stdDeviation="3"/></filter>
+      </defs>
+      <path d="M1350,452 L1492,384 L1872,322 L1752,404 Z" fill="url(#castG)" filter="url(#b14)"/>
+      <path d="M1062,396 L1355,455 L1494,383 L1216,352 Z" fill="#000" opacity=".82" filter="url(#b6)"/>
+      <path d="M1098,402 L1355,449 L1480,389" stroke="#000" stroke-width="6" stroke-linecap="round" fill="none" opacity=".95" filter="url(#b3)"/>
+    </svg>
+    <svg class="rifleSh" viewBox="0 0 1955 460" aria-hidden="true">
+      <path d="M1512,438 L1800,436" stroke="#000" stroke-width="22" stroke-linecap="round" fill="none" opacity=".62" filter="url(#b6)"/>
+      <path d="M1528,433 L1790,432" stroke="#000" stroke-width="9" stroke-linecap="round" fill="none" opacity=".9" filter="url(#b3)"/>
+    </svg>
+    <div class="rifleG"><div class="rifleW l"><img class="main" src="assets/rifle.png" alt=""><img class="sheen" src="assets/rifle.png" alt=""></div></div>
+    <div class="caseGroup">
       <div class="puff pl"></div><div class="puff pr"></div>
       <div class="caseDrop"><div class="caseW"><img class="main" src="assets/case.png" alt=""><img class="sheen" src="assets/case.png" alt=""></div></div></div>
     <div class="promoW l"><img src="assets/promo.png" alt=""></div>

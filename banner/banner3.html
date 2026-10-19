@@ -26,10 +26,10 @@
   .l { opacity: 0; }
   /* ПОЛ: основание кейса стоит на линии y=428 (рабочее поле 1955x460). Тени центрированы на этой линии и лежат ПОД кейсом */
   .caseGroup { position: absolute; left: 960px; top: 0; width: 520px; height: 460px; }
-  .caseGroup .amb { position: absolute; left: 0; top: 392px; width: 520px; height: 76px; border-radius: 50%; opacity: 0;
+  .caseGroup .amb { position: absolute; left: -12px; top: 318px; width: 548px; height: 146px; border-radius: 50%; opacity: 0;
                     background: radial-gradient(ellipse at center, rgba(0,0,0,.66) 0%, rgba(0,0,0,.36) 48%, rgba(0,0,0,0) 74%); filter: blur(5px);
                     animation: shGrow 1s ease-out 3.1s both; }
-  .caseGroup .contact { position: absolute; left: 24px; top: 414px; width: 470px; height: 30px; border-radius: 50%; opacity: 0;
+  .caseGroup .contact { position: absolute; left: 36px; top: 334px; width: 462px; height: 108px; border-radius: 50%; opacity: 0;
                         background: radial-gradient(ellipse at center, rgba(0,0,0,.92) 0%, rgba(0,0,0,.55) 55%, rgba(0,0,0,0) 82%); filter: blur(3px);
                         animation: shGrow 1s ease-out 3.1s both; }
   /* кейс падает на пол, подпрыгивает и оседает; тень растёт по мере падения и "дышит" на отскоке */
@@ -55,16 +55,16 @@
     100% { transform: scale(1); opacity: .95 }
   }
   /* пыль при ударе о пол */
-  .puff { position: absolute; top: 396px; width: 90px; height: 50px; border-radius: 50%; opacity: 0; filter: blur(6px);
+  .puff { position: absolute; top: 352px; width: 90px; height: 50px; border-radius: 50%; opacity: 0; filter: blur(6px);
           background: radial-gradient(ellipse at center, rgba(255,250,240,.7) 0%, rgba(255,250,240,0) 70%); }
-  .puff.pl { left: 20px; animation: puffL .75s ease-out 3.62s both; }
-  .puff.pr { left: 410px; animation: puffR .75s ease-out 3.62s both; }
+  .puff.pl { left: 4px; animation: puffL .75s ease-out 3.62s both; }
+  .puff.pr { left: 440px; animation: puffR .75s ease-out 3.62s both; }
   @keyframes puffL { 0% { transform: translateX(0) scale(.3); opacity: .9 } 100% { transform: translateX(-70px) scale(1.9); opacity: 0 } }
   @keyframes puffR { 0% { transform: translateX(0) scale(.3); opacity: .9 } 100% { transform: translateX(70px) scale(1.9); opacity: 0 } }
 
   /* автомат падает сверху на кейс, бьётся о правый угол крышки, откатывается и облокачивается; приклад ложится на пол */
   .rifleG { position: absolute; left: 0; top: 0; width: 1955px; height: 460px; }
-  .rifleG .contactR { position: absolute; left: 1470px; top: 380px; width: 310px; height: 28px; border-radius: 50%; opacity: 0;
+  .rifleG .contactR { position: absolute; left: 1480px; top: 384px; width: 340px; height: 40px; border-radius: 50%; opacity: 0;
                       background: radial-gradient(ellipse at center, rgba(0,0,0,.8) 0%, rgba(0,0,0,.42) 55%, rgba(0,0,0,0) 82%); filter: blur(4px);
                       animation: fadeIn .3s ease-out 4.62s both; }
   .rifleW { position: absolute; left: 1230px; top: 78px; width: 580px; transform-origin: 82% 86%; animation: rifleFall 1.05s linear 4.05s both; }

@@ -55,7 +55,7 @@ def prefix_graph(covers, crop):
     g = "[0:v]null[s0];"
     for i, (x, y, w, h) in enumerate(covers or []):
         g += (f"[s{i}]split[m{i}][n{i}];"
-              f"[n{i}]crop=iw*{w:.4f}:ih*{h:.4f}:iw*{x:.4f}:ih*{y:.4f},gblur=sigma=24,eq=brightness=-0.3[b{i}];"
+              f"[n{i}]crop=iw*{w:.4f}:ih*{h:.4f}:iw*{x:.4f}:ih*{y:.4f},gblur=sigma=34:steps=3[b{i}];"
               f"[m{i}][b{i}]overlay=W*{x:.4f}:H*{y:.4f}[s{i + 1}];")
     g += f"[s{len(covers or [])}]{crop_filter(crop)}null[pre];"
     return g

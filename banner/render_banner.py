@@ -11,12 +11,14 @@ import tempfile
 from playwright.sync_api import sync_playwright
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-HTML = "file:///" + os.path.join(HERE, "banner.html").replace("\\", "/")
+HTML = "file:///" + os.path.join(HERE, os.environ.get("BANNER_HTML", "banner.html")).replace("\\", "/")
+HEIGHT = int(os.environ.get("BANNER_H", "260"))
+OUT_NAME = os.environ.get("BANNER_OUT", "casecrow_banner.mov")
 
 
 def open_page(p):
     browser = p.chromium.launch(channel="msedge", headless=True)
-    page = browser.new_page(viewport={"width": 1080, "height": 260}, device_scale_factor=1)
+    page = browser.new_page(viewport={"width": 1080, "height": HEIGHT}, device_scale_factor=1)
     page.goto(HTML)
     page.evaluate("document.fonts.ready")
     page.wait_for_timeout(1200)  # шрифты и первый кадр
@@ -40,7 +42,7 @@ if __name__ == "__main__":
         else:
             dur = float(args[0]) if args else 20.0
             fps = int(args[1]) if len(args) > 1 else 30
-            out = os.path.join(HERE, "casecrow_banner.mov")
+            out = os.path.join(HERE, OUT_NAME)
             with tempfile.TemporaryDirectory() as tmp:
                 n = int(dur * fps)
                 for i in range(n):

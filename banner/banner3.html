@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { width: 1080px; height: 280px; background: transparent; overflow: hidden; }
+  :root { --cream: #F2EDE5; --s: 0.5279; }
+
+  /* оболочка: тень, "появление" и раскрытие из круга в баннер */
+  .shell { position: absolute; left: 24px; top: 16px; width: 1032px; height: 243px; filter: drop-shadow(0 12px 20px rgba(0,0,0,.42));
+           animation: appear .55s cubic-bezier(.2,1.3,.3,1) .8s both; }
+  .card { position: absolute; inset: 0; border-radius: 20px; overflow: hidden; perspective: 1700px;
+          animation: expand 1s cubic-bezier(.75,0,.2,1) 1.9s both; }
+  @keyframes appear { 0% { transform: scale(.55); opacity: 0 } 100% { transform: scale(1); opacity: 1 } }
+  @keyframes expand {
+    0%   { clip-path: inset(36px 431px 37px 431px round 85px) }
+    100% { clip-path: inset(0 0 0 0 round 20px) }
+  }
+
+  /* рабочее поле 1955x460, масштабируется до 1032x243 */
+  .design { position: absolute; left: 0; top: 0; width: 1955px; height: 460px; transform: scale(var(--s)); transform-origin: 0 0; }
+  .design img { position: absolute; display: block; }
+  .bg { left: 0; top: 0; width: 1955px; height: 460px; }
+
+  .l { opacity: 0; }
+  /* пол: линия контакта кейса и приклада с полом (y в рабочем поле 1955x460) */
+  /* кейс: стоит на полу, заезжает по полу вместе со своей тенью (тень - в той же группе) */
+  .caseGroup { position: absolute; left: 960px; top: 0; width: 520px; height: 460px; animation: slideIn .85s cubic-bezier(.15,.9,.25,1) 3.1s both; }
+  .caseGroup .amb { position: absolute; left: 6px; top: 392px; width: 510px; height: 74px; border-radius: 50%;
+                    background: radial-gradient(ellipse at center, rgba(0,0,0,.62) 0%, rgba(0,0,0,.34) 45%, rgba(0,0,0,0) 72%); filter: blur(5px); }
+  .caseGroup .contact { position: absolute; left: 36px; top: 423px; width: 440px; height: 26px; border-radius: 50%;
+                        background: radial-gradient(ellipse at center, rgba(0,0,0,.85) 0%, rgba(0,0,0,.5) 55%, rgba(0,0,0,0) 80%); filter: blur(4px); }
+  .caseW { position: absolute; left: 30px; top: 162px; width: 450px; }
+  .caseW img.main { position: relative; width: 100%; }
+  @keyframes slideIn { 0% { transform: translateX(260px); opacity: 0 } 25% { opacity: 1 } 100% { transform: none; opacity: 1 } }
+
+  /* автомат: облокочен на кейс, ствол лежит на правом верхнем углу крышки, приклад на полу справа */
+  .rifleG { position: absolute; left: 0; top: 0; width: 1955px; height: 460px; }
+  .rifleG .contactR { position: absolute; left: 1450px; top: 384px; width: 330px; height: 26px; border-radius: 50%;
+                      background: radial-gradient(ellipse at center, rgba(0,0,0,.72) 0%, rgba(0,0,0,.36) 55%, rgba(0,0,0,0) 80%); filter: blur(4px); opacity: 0; animation: fadeIn .4s ease-out 3.7s both; }
+  .rifleW { position: absolute; left: 1230px; top: 78px; width: 580px; transform-origin: 82% 86%; animation: leanIn .8s cubic-bezier(.3,1.35,.5,1) 3.3s both; }
+  .rifleW img.main { position: relative; width: 100%; }
+  @keyframes leanIn { 0% { transform: rotate(-24deg) translate(-40px,-30px); opacity: 0 } 40% { opacity: 1 } 100% { transform: rotate(0) translate(0,0); opacity: 1 } }
+  @keyframes fadeIn { 0% { opacity: 0 } 100% { opacity: 1 } }
+
+  /* блики по металлу: белый силуэт, видна мягкая полоса */
+  .sheen { position: absolute !important; left: 0; top: 0; width: 100%; filter: brightness(0) invert(1); opacity: .30; pointer-events: none;
+           -webkit-mask-image: linear-gradient(100deg, transparent 0%, #000 50%, transparent 100%); mask-image: linear-gradient(100deg, transparent 0%, #000 50%, transparent 100%);
+           -webkit-mask-size: 38% 100%; mask-size: 38% 100%; -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat;
+           -webkit-mask-position: -90% 0; mask-position: -90% 0; animation: sheen 6s ease-in-out infinite; }
+  .caseW .sheen { animation-delay: 4.6s; }
+  .rifleW .sheen { animation-delay: 5.3s; }
+  @keyframes sheen {
+    0%, 35% { -webkit-mask-position: -90% 0; mask-position: -90% 0 }
+    70%, 100% { -webkit-mask-position: 190% 0; mask-position: 190% 0 }
+  }
+
+  /* плашка с промокодом: падает сверху, затем пульсирует */
+  .promoW { position: absolute; left: 1415px; top: 16px; width: 525px; animation: promoIn .8s cubic-bezier(.3,1.5,.5,1) 3.45s both; }
+  .promoW img { position: relative; width: 100%; animation: promoPulse 2.4s ease-in-out 4.5s infinite; transform-origin: 50% 50%; }
+  @keyframes promoIn { 0% { transform: translateY(-190px); opacity: 0 } 100% { transform: none; opacity: 1 } }
+  @keyframes promoPulse { 0%,100% { transform: scale(1) } 50% { transform: scale(1.035) } }
+
+  /* кнопка: поднимается снизу, по ней бежит блик */
+  .btnW { position: absolute; left: 1450px; top: 328px; width: 478px; animation: btnIn .75s cubic-bezier(.2,1,.3,1) 3.7s both; }
+  .btnW img.main { position: relative; width: 100%; animation: btnBreath 2.8s ease-in-out 4.6s infinite; }
+  .btnW .sheen { opacity: .55; animation-delay: 4.7s; animation-duration: 3.2s;
+                 -webkit-mask-size: 30% 100%; mask-size: 30% 100%; }
+  @keyframes btnIn { 0% { transform: translateY(140px); opacity: 0 } 100% { transform: none; opacity: 1 } }
+  @keyframes btnBreath { 0%,100% { transform: scale(1) } 50% { transform: scale(1.018) } }
+
+  /* общий скользящий свет и пылинки */
+  .gloss { position: absolute; top: -80px; left: -500px; width: 380px; height: 700px; transform: rotate(18deg); mix-blend-mode: soft-light;
+           background: linear-gradient(90deg, rgba(255,255,255,0), rgba(255,255,255,.7), rgba(255,255,255,0)); animation: gloss 8s ease-in-out 4.8s infinite; }
+  @keyframes gloss { 0%,30% { transform: translateX(0) rotate(18deg) } 80%,100% { transform: translateX(2900px) rotate(18deg) } }
+  .mote { position: absolute; border-radius: 50%; background: rgba(255,250,235,.9); filter: blur(.6px); opacity: 0; animation: mote var(--dur) linear var(--delay) infinite; }
+  @keyframes mote { 0% { transform: translate(0,0) scale(.6); opacity: 0 } 15% { opacity: .75 } 85% { opacity: .75 } 100% { transform: translate(var(--dx), -560px) scale(1.1); opacity: 0 } }
+
+  /* вступление: круг с вороном по центру, затем ворон уезжает на своё место, крем растворяется */
+  .intro { position: absolute; inset: 0; background: var(--cream); animation: fillOut .55s ease-in 2.75s both; }
+  .introCrow { position: absolute; left: 8.4px; top: 26.4px; width: 155.2px; height: 158.4px;
+               animation: crowFly .9s cubic-bezier(.75,0,.2,1) 1.9s both, crowOut .3s ease-out 2.8s both; transform-origin: 50% 50%; }
+  @keyframes crowFly { 0% { transform: translate(430px, 15.9px) scale(.8) } 100% { transform: translate(0,0) scale(1) } }
+  @keyframes crowOut { 0% { opacity: 1 } 100% { opacity: 0 } }
+  @keyframes fillOut { 0% { opacity: 1 } 100% { opacity: 0 } }
+</style>
+</head>
+<body>
+<div class="shell"><div class="card">
+  <div class="design" id="design">
+    <img class="bg" src="card.png" alt="">
+    <div class="rifleG"><div class="contactR"></div>
+      <div class="rifleW l"><img class="main" src="assets/rifle.png" alt=""><img class="sheen" src="assets/rifle.png" alt=""></div></div>
+    <div class="caseGroup l"><div class="amb"></div><div class="contact"></div>
+      <div class="caseW"><img class="main" src="assets/case.png" alt=""><img class="sheen" src="assets/case.png" alt=""></div></div>
+    <div class="promoW l"><img src="assets/promo.png" alt=""></div>
+    <div class="btnW l"><img class="main" src="assets/button.png" alt=""><img class="sheen" src="assets/button.png" alt=""></div>
+    <div class="gloss"></div>
+    <div id="motes"></div>
+  </div>
+  <div class="intro"><img class="introCrow" src="crow2.png" alt=""></div>
+</div></div>
+<script>
+  (function () {
+    var seed = 7;
+    function rnd() { seed |= 0; seed = seed + 0x6D2B79F5 | 0; var t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }
+    var host = document.getElementById('motes');
+    for (var i = 0; i < 26; i++) {
+      var d = document.createElement('div'); d.className = 'mote';
+      var sz = 3 + rnd() * 5, dur = 9 + rnd() * 8;
+      d.style.cssText = 'left:' + (900 + rnd() * 1000) + 'px;top:' + (440 + rnd() * 30) + 'px;width:' + sz + 'px;height:' + sz + 'px;--dur:' + dur + 's;--delay:-' + (rnd() * dur) + 's;--dx:' + (-80 + rnd() * 160) + 'px';
+      host.appendChild(d);
+    }
+  })();
+  window.setT = function (ms) {
+    document.getAnimations().forEach(function (a) { a.pause(); a.currentTime = ms; });
+  };
+</script>
+</body>
+</html>

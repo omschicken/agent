@@ -1,0 +1,49 @@
+{
+ "shadow": {
+  "mode": "RGBA",
+  "had_alpha": true,
+  "size": [
+   1237,
+   164
+  ]
+ },
+ "button": {
+  "mode": "RGBA",
+  "had_alpha": true,
+  "size": [
+   1354,
+   317
+  ]
+ },
+ "promo": {
+  "mode": "RGBA",
+  "had_alpha": true,
+  "size": [
+   1327,
+   409
+  ]
+ },
+ "rifle": {
+  "mode": "RGBA",
+  "had_alpha": true,
+  "size": [
+   1421,
+   846
+  ]
+ },
+ "case": {
+  "mode": "RGBA",
+  "had_alpha": true,
+  "size": [
+   1360,
+   804
+  ]
+ },
+ "bg": {
+  "mode": "RGB",
+  "size": [
+   2048,
+   768
+  ]
+ }
+}

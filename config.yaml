@@ -3,6 +3,9 @@
   promo_code: "SHORTS"
   banner_text: "Открывай кейсы на {site_name} | промо {promo_code}"
   disclaimer: "18+ Играйте ответственно"
+  banner_video: "banner/casecrow_banner3.webm"   # анимированный баннер CaseCrow (WebM с прозрачностью); пусто = старая статичная плашка
+  banner_delay: 0.3         # через сколько секунд после старта клипа начинается анимация баннера
+  banner_bottom: 240        # отступ от нижнего края: зона интерфейса TikTok/Reels
 clip:
   min_sec: 15               # длина вертикального клипа: 15-20 секунд (вставки по 5 секунд не берём)
   max_sec: 20

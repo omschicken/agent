@@ -17,3 +17,6 @@ banner/*.mov
 banner/preview.mp4
 banner/overlay_test.mp4
 banner/stills/
+banner/*.mp4
+banner/gpt_banner.png
+banner/assets/bg_full.png

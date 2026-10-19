@@ -10,3 +10,6 @@ rejected/
 cache/
 seen.json
 seen_twitch.json
+examples/src/
+old_out/
+examples/src/

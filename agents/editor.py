@@ -8,7 +8,21 @@ def _esc(s):
     return s.replace("\\", "\\\\").replace(":", "\\:").replace("'", "’").replace("%", "\\%")
 
 
-def render(src, start, end, out, brand, crop=None, covers=None):
+def _caption_filters(caption):
+    """Подпись сверху в кадре: жирный белый текст с чёрной обводкой, до 2 строк по ~22 символа."""
+    import textwrap
+    if not caption:
+        return ""
+    lines = textwrap.wrap(caption, width=22)[:2]
+    font = "fontfile='C\\:/Windows/Fonts/arialbd.ttf':"
+    out = ""
+    for i, ln in enumerate(lines):
+        out += (f"drawtext={font}text='{_esc(ln)}':fontcolor=white:fontsize=72:borderw=6:bordercolor=black:"
+                f"x=(w-text_w)/2:y={330 + i * 95},")
+    return out
+
+
+def render(src, start, end, out, brand, crop=None, covers=None, caption=None):
     """crop - (x, y, w, h) в долях кадра: оставляемая область (срез вебкамеры стримера);
     covers - прямоугольники чужой рекламы, которые закрываем размытием."""
     from agents.judge import prefix_graph
@@ -21,7 +35,7 @@ def render(src, start, end, out, brand, crop=None, covers=None):
         "[a]scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920,boxblur=30:5[bg];"
         "[b]scale=1080:-2[fg];"
         "[bg][fg]overlay=(W-w)/2:(H-h)/2[v];"
-        "[v]drawbox=x=0:y=1500:w=1080:h=130:color=black@0.65:t=fill,"
+        f"[v]{_caption_filters(caption)}drawbox=x=0:y=1500:w=1080:h=130:color=black@0.65:t=fill,"
         f"drawtext={FONT}text='{banner}':fontcolor=white:fontsize={banner_size}:x=(w-text_w)/2:y=1535,"
         f"drawtext={FONT}text='{disc}':fontcolor=white@0.8:fontsize=28:x=(w-text_w)/2:y=1590[o]"
     )

@@ -1,0 +1,18 @@
+{
+  "videos": 5,
+  "scenes": 44,
+  "duration_sec": {
+    "p10": 13.1,
+    "median": 17.8,
+    "p90": 32.6
+  },
+  "peak_db_over_median": {
+    "p10": 7.4,
+    "median": 15.7,
+    "p90": 24.8
+  },
+  "peak_position_in_clip": {
+    "median": 0.6
+  },
+  "with_speech_ratio": 1.0
+}

@@ -32,14 +32,33 @@ def _template_copy(filename, note, brand, platforms):
     return out
 
 
+def _approved_block():
+    """Подписи, которые одобрил заказчик (examples/approved.json), как образец стиля."""
+    p = os.path.join("examples", "approved.json")
+    if not os.path.exists(p):
+        return ""
+    items = json.load(open(p, encoding="utf-8"))
+    lines = [f"- данные: {x['data']}\n  подпись: «{x['caption']}»" for x in items]
+    return "ОБРАЗЦЫ ОДОБРЕННЫХ ПОДПИСЕЙ (повтори стиль, не копируй слова):\n" + "\n".join(lines) + "\n"
+
+
 def _claude_copy(filename, note, brand, platforms, model):
     import anthropic
 
     client = anthropic.Anthropic()
     prompt = f"""Ты SMM-редактор канала про CS2. Клип: «{note or filename}».
+{_approved_block()}
 Верни JSON вида {{"<платформа>": {{"title": "...", "description": "...", "hashtags": ["..."]}}}}
-для платформ: {platforms}. Правила: заголовок до 70 символов, цепляющий, без ложного кликбейта;
-в описании источник клипа (если он указан в описании клипа), упоминание сайта {brand['site_name']}
+для платформ: {platforms}.
+СТИЛЬ заголовка (title) - КОРОТКАЯ разговорная подпись, как написал бы друг, который скинул клип: «кто + что случилось»,
+до 45 символов, строчными буквами (имена и ники как в источнике), без капса, без «смотрите/вы не поверите/шок»,
+максимум один эмодзи или без. Примеры того, что нужно: «нереальный хайлайт от tried’а», «скай попался с нейросетью».
+Опирайся ТОЛЬКО на факты из данных клипа (ник стримера из источника, название зрительского клипа, цитата, что
+произошло). Не придумывай имён, ников и событий, которых нет в данных; если непонятно, кто герой, называй
+по стримеру из источника. Для хайлайта - про сам игровой момент, для смешного - про то, что произошло, для рейджа - про
+причину срыва.
+Описание (description): первая строка - та же короткая подпись, дальше источник клипа (если он указан в описании клипа),
+упоминание сайта {brand['site_name']}
 и промокода {brand['promo_code']}, а также строка «{brand['disclaimer']}». Про сайт и промокод пиши только
 факты (название и сам код): НЕ обещай бонусы, скидки, выигрыши, заработок, «гарантированный дроп» и не
 выдумывай условия, которых тебе не дали. Только JSON."""
@@ -51,11 +70,20 @@ def _claude_copy(filename, note, brand, platforms, model):
     return json.loads(text)
 
 
-def write_copy(filename, note, brand, platforms, model, provider="auto"):
+def write_copy(filename, note, brand, platforms, model, provider="auto", caption=None):
+    """caption - подпись, вшитая в видео (её придумал агент по кадрам): идёт заголовком и первой строкой описания."""
     use_claude = provider == "claude" or (provider == "auto" and os.environ.get("ANTHROPIC_API_KEY"))
+    copy = None
     if use_claude:
         try:
-            return _claude_copy(filename, note, brand, platforms, model)
+            copy = _claude_copy(filename, note, brand, platforms, model)
         except Exception as e:  # нет денег/сети/битый JSON - не роняем пайплайн
             print(f"[copywriter] Claude недоступен ({e}), использую шаблоны")
-    return _template_copy(filename, note, brand, platforms)
+    if copy is None:
+        copy = _template_copy(filename, note, brand, platforms)
+    if caption:
+        for p in platforms:
+            if p in copy:
+                copy[p]["title"] = caption
+                copy[p]["description"] = caption + "\n\n" + copy[p].get("description", "")
+    return copy

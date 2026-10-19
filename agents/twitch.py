@@ -88,7 +88,8 @@ def scout(cfg, dest="inbox"):
         credit = (f"{c['title']}\nИсточник: стрим {login} на Twitch, момент по отметке зрителей "
                   f"({views} просмотров клипа), https://www.twitch.tv/videos/{vod}?t={off}s")
         open(os.path.join(dest, name + ".txt"), "w", encoding="utf-8").write(credit)
-        json.dump({"type": "segment", "login": login, "views": views, "lead": lead, "clip_title": c["title"]},
+        json.dump({"type": "segment", "login": login, "views": views, "lead": lead, "tail": tail,
+                   "clip_dur": int(c["durationSeconds"]), "clip_title": c["title"]},
                   open(os.path.join(dest, name + ".seg.json"), "w", encoding="utf-8"), ensure_ascii=False)
         got += 1
         print(f"[twitch] {name}: {views} просм. «{c['title']}» ({end - start}с)")

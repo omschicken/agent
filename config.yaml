@@ -4,16 +4,17 @@
   banner_text: "Открывай кейсы на {site_name} | промо {promo_code}"
   disclaimer: "18+ Играйте ответственно"
 clip:
-  min_sec: 6
-  max_sec: 40
-  per_source: 3             # сколько клипов резать из одного видео
+  min_sec: 15               # длина вертикального клипа: 15-20 секунд (вставки по 5 секунд не берём)
+  max_sec: 20
+  per_source: 3            # сколько клипов резать из одного видео
   mode: transcript          # transcript = записи стримов: Whisper + Claude ищут рейджи/смешное/хайлайты; scenes = по сценам/громкости
   whisper_model: large-v3-turbo   # на GPU (RTX 3070): large-v3-turbo - точно и быстро; small/base - для процессора
-  moment_min_sec: 15
-  moment_max_sec: 45
+  moment_min_sec: 15        # жёсткие границы длины клипа (подводка + пик + реакция помещаются в 15-20 с)
+  moment_max_sec: 20
   min_loud_db: 12           # момент рассматривается, только если громкость скакнула на столько дБ выше локального уровня...
   min_laugh: 0.2            # ...или вероятность сильного смеха (классификатор AudioSet) не ниже этой
   min_score: 7              # и Claude оценил момент (рейдж/смешное) не ниже 7 из 10
+  segment_min_score: 7      # для вырезок по клипам зрителей (Twitch)
 scout:
   # lang: ru - только русскоязычные ролики (смешное/полезное); en - турнирные хайлайты, можно на англ.
   queries:
@@ -38,12 +39,12 @@ scout:
   max_height: 1080
   vet: true                 # Claude по названию/описанию проверяет: один момент, не сборка, нужный язык
 twitch:                     # режим --twitch: моменты по топ-клипам зрителей, вырезанные из записи стрима
-  logins: [buster, evelone2004, strogo, m3wsu, deko, skywhywalker, dangerlyoha, dmitry_lixxx, recrent, inkmate0, ct0m]
-  period: LAST_WEEK         # LAST_DAY | LAST_WEEK | LAST_MONTH | ALL_TIME
+  logins: [buster, evelone2004, strogo, m3wsu, deko, skywhywalker, dangerlyoha, dmitry_lixxx, recrent, inkmate0, ct0m, chopperinho, shadowkekw]
+  period: LAST_MONTH        # LAST_DAY | LAST_WEEK | LAST_MONTH | ALL_TIME
   game_contains: counter-strike
-  min_views: 500            # клип зрителей набрал не меньше просмотров
-  per_channel: 3            # топ-N клипов с каждого стримера
-  max_new: 10               # сколько моментов брать за запуск
+  min_views: 4000           # клип зрителей набрал не меньше просмотров (хиты; клатч 1в4 на 7900 подошёл, клипы на 3-4 тыс - нет)
+  per_channel: 5            # топ-N клипов с каждого стримера
+  max_new: 12               # сколько моментов брать за запуск
   lead: 12                  # секунд подводки до отметки клипа
   tail: 6                   # секунд после конца клипа
   max_height: 720

@@ -163,12 +163,14 @@ def verdict(v, rules, source=False, covered=False):
         return False, f"чужая реклама занимает слишком большую часть кадра ({cover_area(ads):.0%})"
 
     if rules.get("curated"):  # источник - белый список авторов, моменты уже отобраны: только жёсткие проверки
-        if rules.get("require_cs2", True) and not v.get("is_cs2_gameplay"):
-            return False, "не игровой процесс CS2"
         if v.get("third_party_site"):
             return False, "интерфейс стороннего сайта кейсов/ставок во весь экран"
         if v.get("giveaway_or_promo"):
             return False, "розыгрыш"
+        if rules.get("skip_content_checks"):  # вырезка по клипу зрителей: момент уже подтверждён по кадрам и звуку
+            return True, v.get("reason", "")
+        if rules.get("require_cs2", True) and not v.get("is_cs2_gameplay"):
+            return False, "не игровой процесс CS2"
         if v.get("content_type") == "talking_or_settings":
             return False, "разговор/настройки"
         return True, v.get("reason", "")

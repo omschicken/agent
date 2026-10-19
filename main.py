@@ -44,10 +44,13 @@ for src in glob.glob("inbox/*.mp4"):
     title = note.splitlines()[0] if note else name
     crop = None
     covers = []
+    rules = dict(cfg["judge"])
+    if os.path.exists(src[:-4] + ".seg.json"):  # вырезка по клипу зрителей: содержимое подтверждает trim_segment
+        rules["skip_content_checks"] = True
 
     if JUDGE:  # весь ролик: лица, чужие сайты, розыгрыши, разговоры; вебкамеру срезаем
         v = judge.look(src, title, cfg["model"], n=cfg["judge"].get("source_frames", 8))
-        ok, why = judge.verdict(v, cfg["judge"], source=True)
+        ok, why = judge.verdict(v, rules, source=True)
         if not ok:
             reject(src, f"{why} | {(v or {}).get('reason', '')}")
             continue
@@ -118,16 +121,23 @@ for src in glob.glob("inbox/*.mp4"):
                 clip_covers += extra
                 v = judge.look(src, title, cfg["model"], n=cfg["judge"].get("clip_frames", 4),
                                start=s, end=e, crop=crop, covers=clip_covers)
-            ok, why = judge.verdict(v, cfg["judge"], covered=True)
+            ok, why = judge.verdict(v, rules, covered=True)
             if not ok:
                 print(f"[judge] клип {s:.0f}-{e:.0f}с отклонён: {why} | {(v or {}).get('reason', '')}")
                 continue
         made += 1
         out = f"out/{name}_{made}.mp4"
-        editor.render(src, s, e, out, cfg["brand"], crop=crop, covers=clip_covers)
         moment_note = note + (f"\nМомент {notes[(s, e)]}" if (s, e) in notes else "")
+        cap = None
+        if os.environ.get("ANTHROPIC_API_KEY") and cfg["clip"].get("caption", True):
+            # агент смотрит кадры клипа и сочиняет короткую подпись, которая вшивается сверху в видео
+            from agents import captioner
+            cap = captioner.caption(src, s, e, moment_note, cfg["model"],
+                                    cfg["clip"].get("whisper_model", "small"), covers=clip_covers)
+            print(f"[caption] {name}: «{cap}»")
+        editor.render(src, s, e, out, cfg["brand"], crop=crop, covers=clip_covers, caption=cap)
         copy = copywriter.write_copy(name, moment_note, cfg["brand"], cfg["platforms"], cfg["model"],
-                                     cfg.get("copy_provider", "auto"))
+                                     cfg.get("copy_provider", "auto"), caption=cap)
         if (s, e) in meta:
             copy["_moment"] = meta[(s, e)]
         with open(out[:-4] + ".json", "w", encoding="utf-8") as f:
